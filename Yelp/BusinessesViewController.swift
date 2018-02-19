@@ -19,6 +19,8 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
     
     var offset = 0
     
+    var searchTerm = "Thai"
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,42 +31,22 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
         
         searchBar.delegate = self
         
-        
-       /* Business.searchWithTerm(term: "Thai", completion: { (businesses: [Business]?, error: Error?) -> Void in
-            
-            self.businesses = businesses
-            self.filteredData = businesses
-            self.tableView.reloadData()
-            if let businesses = businesses {
-                for business in businesses {
-                    print(business.name!)
-                    print(business.address!)
-                }
-            }
-            
-            }
-        )
- */
         loadMoreData()
-        /* Example of Yelp search with more search options specified
-         */
-       /* Business.searchWithTerm(term: "Restaurants", sort: .distance, categories: nil, deals: nil, offset: 0, completion: { (businesses: [Business]!, error: Error!) -> Void in
-         self.businesses = businesses
-         self.filteredData = businesses
-         self.tableView.reloadData()
-            
-         for business in businesses {
-         print(business.name!)
-         print(business.address!)
-         }
-         }
-        )
-        */
+        
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let cell = sender as! UITableViewCell
+        if let indexPath = tableView.indexPath(for: cell) {
+            let business = businesses[indexPath.row]
+            let mapViewController = segue.destination as! MapViewController
+            mapViewController.business = business
+        }
     }
     
     
@@ -78,12 +60,9 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
     
     // This method updates filteredData based on the text in the Search Box
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        self.businesses = searchText.isEmpty ? businesses : businesses.filter { (item: Business) -> Bool in
-            // If dataItem matches the searchText, return true to include it
-            return item.name?.range(of: searchText, options: .caseInsensitive, range: nil, locale: nil) != nil
-        }
-        
-        tableView.reloadData()
+        self.searchTerm = searchText
+        loadNewData()
+        //tableView.reloadData()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -107,24 +86,7 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     func loadMoreData() {
-        /*Business.searchWithTerm(term: "Restaurants", sort: .distance, categories: nil, deals: nil, offset: 0, completion: { (businesses: [Business]!, error: Error!) -> Void in
-            self.businesses = businesses
-            self.filteredData = businesses
-            self.tableView.reloadData()
-            
-            for business in businesses {
-                print(business.name!)
-                print(business.address!)
-            }
-            self.isMoreDataLoading = false
-            
-        })
-        
-        */
-        
-        Business.searchWithTerm(term: "Thai", sort: .distance, categories: nil, deals: nil, offset: self.offset, completion:
-        
-        //Business.searchWithTerm(term: "Thai", completion:
+        Business.searchWithTerm(term: self.searchTerm, sort: .distance, categories: nil, deals: nil, offset: self.offset, completion:
             { (businesses: [Business]?, error: Error?) -> Void in
             
             if let businesses = businesses {
@@ -137,10 +99,7 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
                 }
             }
             self.offset += 5
-            /*    if (self.offset > 50) {
-                    self.offset = 0
-                }
- */
+            
             self.isMoreDataLoading = false
             
         }
@@ -148,22 +107,26 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
     }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    func loadNewData() {
+        Business.searchWithTerm(term: self.searchTerm, sort: .distance, categories: nil, deals: nil, offset: self.offset, completion:
+            { (businesses: [Business]?, error: Error?) -> Void in
+                
+                if let businesses = businesses {
+                    //self.businesses = businesses
+                    self.businesses = businesses
+                    self.tableView.reloadData()
+                    for business in businesses {
+                        print(business.name!)
+                        print(business.address!)
+                    }
+                }
+                
+                self.isMoreDataLoading = false
+                
+        }
+        )
+    }
+
     
     
     
